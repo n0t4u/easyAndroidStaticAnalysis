@@ -1,2 +1,2 @@
 # easyAndroidStaticAnalysis
-Small script written in bash for decompiling an APK and extract relevant info in a grepable format
+Small script written in bash for decompiling an APK and extracting relevant info in a grepable format
