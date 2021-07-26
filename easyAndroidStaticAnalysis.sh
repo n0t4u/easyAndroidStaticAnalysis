@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Author: n0t4u
-#Version: 0.1.0
+#Version: 0.1.1
 
 if [ "$#" -lt 1 ]; then
 	echo "No file was provided"
@@ -13,6 +13,10 @@ fi
 if [ -z '$(which jadx)' ]; then
 	echo "jadx is not installed. Installing now..."
 	sudo apt install jadx
+	if [ $? -eq 0 ]; then
+		echo "jadx correctly installed. Run the script again."
+		exit 0
+	fi
 fi
 if [ "$2" ]; then
 	path="$2"
@@ -44,6 +48,20 @@ else
 	echo -e "Permissions"
 	echo "$(grep -i -P '\"[\S\.]+permission[^\"]+' -o ${manifest} | tr -d '"')"
 	echo -e "IP Addresses"
-	echo "$(grep -r -i -P "(25[0-5]|2[0-4][1-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)" -o -H -n ${path}/Decompiled/ --color='always' 2>/dev/null)"
+	#echo "$(grep -r -i -P '(25[0-5]|2[0-4][1-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' -o -H -n ${path}/Decompiled/ --color='always' 2>/dev/null)"
+	echo -e "HTTP, HTTPS and file connections"
+	echo -e "$(grep -r -i -P '(http[s]?|file):\/\/[^\"]+' -h -o ${path}/Decompiled/ 2>/dev/null | grep -v -e 'w3.org' -e 'adobe' | sort| uniq)"
+	echo -e "Port conections"
+	echo -e "$(grep -r -i -P 'port[_\ \-]{1}[\S\.]*\ ?= ?[\d]{1,5}[ ;]' 2>/dev/null -h ${path}/Decompiled/ --color='always' | grep -i -v -e 'support' -e 'report' )" #Remove --color
+	echo -e "Hardcoded passwords"
+	echo -e "$(grep -r -i -P '[\S]*P(ass)?w(or)?d ?=[^;]+' -H -n -o --color='always' 2>/dev/null)"
+	echo -e "Activities"
+	echo -e "$(grep -i -o -P 'activity[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name=\"')"
+	echo -e "Exported Activities"
+	echo -e "$(grep -i -P 'activity[\S ]+exported=\"true\"' ${manifest} | grep -P 'name=\"[^\"]+' -o | sed 's/name=\"//g')"
+	echo -e "Overflow vulnerable functions"
+	echo -e "$(grep -r -e 'strcat' -e 'strcpy' -e 'strncat' -e 'strlcat' -e 'strncpy' -e 'strlcpy' -e 'sprintf' -e 'snprintf' -e ' gets(' -e '\.gets(' -h  -H -n --color='always' ${path}/Decompiled/ 2>/dev/null)"
+	echo -e "Raw SQL queries"
+	echo -e "$(grep -r -i -P '(select [\S]+ from|update [\S]+\delete [\S]+ from|insert [\S]* into)' ${path}/Decompiled/ 2>/dev/null)" #Not tried yet
 
 fi
