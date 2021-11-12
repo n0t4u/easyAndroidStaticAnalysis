@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Author: n0t4u
-#Version: 0.2.0
+#Version: 0.2.1
 
 #Source: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux
 # Regular Colors
@@ -76,34 +76,41 @@ echo -e "${Cyan}usesCleartextTraffic?${ColorOff}\t $(grep -i -P "android:usesCle
 #Get install location
 echo -e "${Cyan}installLocation${ColorOff}\t $(grep -i -P "android:installLocation=\"[\S]+\"" ${manifest} -o | awk '{print $2}' FS='=\"' | sed 's/\"$//g')"
 
+#Checksums
+echo -e "${Cyan}md5${ColorOff}\t$(md5sum $1 | awk '{print $1}')"
+echo -e "${Cyan}sha1${ColorOff}\t$(sha1sum $1 | awk '{print $1}')"
+echo -e "${Cyan}sha256${ColorOff}\t$(sha256sum $1 | awk '{print $1}')"
+
 #Get Permissions
 echo -e "\n${Cyan}Permissions${ColorOff}"
-echo "$(grep -i -P '\"[\S\.]+permission[^\"]+' -o ${manifest} | tr -d '"')"
+echo "$(grep -i -P '<uses-permission [\S ]+\/>' -o ${manifest} | awk '{print $2}' FS='=\"' | sed 's/\" \?\/>$//g')"
 #Get IP Addresses in the code
 echo -e "${Cyan}IP Addresses${ColorOff}"
 echo "$(grep -r -i -P '(25[0-5]|2[0-4][1-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' -o -H -n ${path}/Decompiled/ --color='always' 2>/dev/null | grep -v -e '0.0.0.0')" #-H -n
 #Get web connections in the code
 echo -e "${Cyan}HTTP, HTTPS and file connections${ColorOff}"
-echo -e "$(grep -r -i -P '(http[s]?|file):\/\/[^\"]+' -h -o ${path}/Decompiled/ 2>/dev/null | grep -v -e 'w3.org' -e 'adobe' | sort| uniq)"
+echo -e "$(grep -r -i -P '(http[s]?|file):\/\/[^\"]+' -h -o ${path}/Decompiled/ 2>/dev/null | grep -v -e 'w3.org' -e 'adobe' -e 'apache.org' -e 'xml.org' -e 'googleapis.com' | grep -v -P 'schemas.(microsoft|openxmlformats|android|xmlsoap)' | sort| uniq)"
 #Get port numbers in the code
 echo -e "${Cyan}Port conections${ColorOff}"
-echo -e "$(grep -r -i -P 'port[_\ \-]{1}[\S\.]*\ ?= ?[\d]{1,5}[ ;]' 2>/dev/null -h ${path}/Decompiled/ --color='always' | grep -i -v -e 'support' -e 'report' )" #Remove --color
+echo -e "$(grep -r -i -P '[\ \-\_]?port[_\ \-]{1}[\S\.]*\ ?= ?[\d]{1,5}[ ;]' 2>/dev/null -h ${path}/Decompiled/ --color='always' | grep -i -v -e 'support' -e 'report' )" #Remove --color
 #Get hardcoded passwords
 echo -e "${Cyan}Hardcoded passwords${ColorOff}"
 echo -e "$(grep -r -i -P '[\S]*P(ass)?w(or)?d ?=[^;]+' -H -n -o --color='always' 2>/dev/null)"
 #Get application's activities found in the manifest
 activities=$(grep -i -o -P 'activity[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name="')
 echo -e "${Cyan}Activity names${ColorOff}"
-for i in ${activities}; do echo ${i};	done
+#for i in ${activities}; do echo ${i};	done
 echo -e "${Cyan}Activity paths${ColorOff}"
-for i in ${activities}; do find . -name $(echo ${i} | awk '{print $2}' FS='.')*.java;	done
+for i in ${activities}; do find ${path} -name "$(echo ${i} | awk '{print $(NF)}' FS='.').java";	done
 #Identify exported Activities
 echo -e "${Cyan}Exported activities${ColorOff}"
 for i in $(grep -i -P 'activity[\S ]+exported=\"true\"' ${manifest} | grep -P 'name=\"[^\"]+' -o | sed 's/name=\"//g'); do echo ${i};done
 #Get application's services found in the manifest
 echo -e "${Cyan}Services${ColorOff}"
+for i in $(grep -i -o -P 'service[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name="'); do echo ${i};	done
 #Identify exported Services
 echo -e "${Cyan}Exported services${ColorOff}"
+for i in $(grep -i -P 'service[\S ]+exported=\"true\"' ${manifest} | grep -P 'name=\"[^\"]+' -o | sed 's/name=\"//g'); do echo ${i};done
 #Get application's receivers found in the manifest
 echo -e "${Cyan}Receivers${ColorOff}"
 for i in $(grep -i -o -P 'receiver[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name="'); do echo ${i};	done
@@ -111,16 +118,16 @@ for i in $(grep -i -o -P 'receiver[\S ]+android:name=\"[^\"]+' ${manifest} | awk
 echo -e "${Cyan}Exported receivers${ColorOff}"
 #Get application's providers found in the manifest
 echo -e "${Cyan}Providers${ColorOff}"
-for i in $(grep -i -o -P 'provider[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name="'); do echo ${i};	done
+for i in $(grep -i -o -P 'provider[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name="'); do echo ${i}; done
 #Identify exported Providers
 echo -e "${Cyan}Exported providers${ColorOff}"
-echo -e "$(grep -i -P 'provider[\S ]+exported=\"true\"' ${manifest} | grep -P 'name=\"[^\"]+' -o | sed 's/name=\"//g')"
+for i in $(grep -i -P 'provider[\S ]+exported=\"true\"' ${manifest} | grep -P 'name=\"[^\"]+' -o | sed 's/name=\"//g'); do echo ${i}; done
 #Check if any overflow vulnerable function is used"
 echo -e "${Cyan}Overflow vulnerable functions${ColorOff}"
 echo -e "$(grep -r -e 'strcat' -e 'strcpy' -e 'strncat' -e 'strlcat' -e 'strncpy' -e 'strlcpy' -e 'sprintf' -e 'snprintf' -e ' gets(' -e '\.gets(' -h  -H -n --color='always' ${path}/Decompiled/ 2>/dev/null)"
 #Get Raw SQL queries from code"
 echo -e "${Cyan}Raw SQL queries${ColorOff}"
-echo -e "$(grep -r -i -P '(select [\S]+ from|update [\S]+\delete [\S]+ from|insert [\S]* into)' ${path}/Decompiled/ 2>/dev/null)" #Not tried yet
+echo -e "$(grep -r -i -o -H -n --color='always' -P '(\")[\S ]*(select [\S]+ from |update [\S]+\delete [\S]+ from |insert [\S]* into )[^\"]*' ${path}/Decompiled/ 2>/dev/null | sed 's/^"//g')" #Not tried yet
 #Get keywords regarding to execution commands
 echo -e "${Cyan}Executable commands${ColorOff}"
-for i in $(grep -r -i -P '[\S]+(sql[^ite]{3}|(^android.)runtime|exec(^utor)|(^android.)shell)[\S]+' -o -h ${path}/Decompiled/ 2>/dev/null);do echo -e "${i}"; done
+for i in $(grep -r -i -o --color='always' -P '[\S]*((^android.)runtime|exec(^utor)|(^android.)shell)[^\r\n;\{\}\(\)]+' -o -h ${path}/Decompiled/ 2>/dev/null);do echo -e "${i}"; done #sql[^ite]{3}|
