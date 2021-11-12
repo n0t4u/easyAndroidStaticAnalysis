@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Author: n0t4u
-#Version: 0.2.1
+#Version: 0.2.2
 
 #Source: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux
 # Regular Colors
@@ -95,11 +95,11 @@ echo -e "${Cyan}Port conections${ColorOff}"
 echo -e "$(grep -r -i -P '[\ \-\_]?port[_\ \-]{1}[\S\.]*\ ?= ?[\d]{1,5}[ ;]' 2>/dev/null -h ${path}/Decompiled/ --color='always' | grep -i -v -e 'support' -e 'report' )" #Remove --color
 #Get hardcoded passwords
 echo -e "${Cyan}Hardcoded passwords${ColorOff}"
-echo -e "$(grep -r -i -P '[\S]*P(ass)?w(or)?d ?=[^;]+' -H -n -o --color='always' 2>/dev/null)"
+echo -e "$(grep -r -i -P '[\S]*P(ass)?w(or)?d ?=[^;]+' -H -n -o --color='always' 2>/dev/null | grep -v -P "R[\S]*\.java")"
 #Get application's activities found in the manifest
 activities=$(grep -i -o -P 'activity[\S ]+android:name=\"[^\"]+' ${manifest} | awk '{print $2}' FS='name="')
 echo -e "${Cyan}Activity names${ColorOff}"
-#for i in ${activities}; do echo ${i};	done
+for i in ${activities}; do echo ${i};	done
 echo -e "${Cyan}Activity paths${ColorOff}"
 for i in ${activities}; do find ${path} -name "$(echo ${i} | awk '{print $(NF)}' FS='.').java";	done
 #Identify exported Activities
@@ -130,4 +130,4 @@ echo -e "${Cyan}Raw SQL queries${ColorOff}"
 echo -e "$(grep -r -i -o -H -n --color='always' -P '(\")[\S ]*(select [\S]+ from |update [\S]+\delete [\S]+ from |insert [\S]* into )[^\"]*' ${path}/Decompiled/ 2>/dev/null | sed 's/^"//g')" #Not tried yet
 #Get keywords regarding to execution commands
 echo -e "${Cyan}Executable commands${ColorOff}"
-for i in $(grep -r -i -o --color='always' -P '[\S]*((^android.)runtime|exec(^utor)|(^android.)shell)[^\r\n;\{\}\(\)]+' -o -h ${path}/Decompiled/ 2>/dev/null);do echo -e "${i}"; done #sql[^ite]{3}|
+echo -e "$(grep -r -i --color='always' -H -n -P '[\S]*((^android.)runtime|exec(^utor)|(^android.)shell)[^\r\n;\{\}\(\)]+' -o -h ${path}/Decompiled/ 2>/dev/null)" #sql[^ite]{3}|
