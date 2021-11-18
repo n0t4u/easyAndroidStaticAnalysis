@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Author: n0t4u
-#Version: 0.2.2
+#Version: 0.2.3
 
 #Source: https://stackoverflow.com/questions/5947742/how-to-change-the-output-color-of-echo-in-linux
 # Regular Colors
@@ -58,7 +58,8 @@ fi
 
 #Find manifest location
 manifest=$(find ${path}/Decompiled -type f -name AndroidManifest.xml)
-echo -e "${Cyan}Manifest Path\t ${ColorOff}${manifest}"
+#Get application name
+echo -e "${Cyan}Aplication name${ColorOff}\t $(grep	-i -P "<string name=\"appName\">[\S ]+</string>" ${path}/Decompiled/resources/res/values/strings.xml | cut -d ">" -f 2 | cut -d "<" -f 1)"
 #Get Package name of the application
 echo -e "${Cyan}Package name${ColorOff}\t $(grep -i -P "package=\"[\S]+\""  ${manifest} -o | awk '{print $2}' FS='=\"' |tr -d '"')"
 #Get minimum SDK version allowed
@@ -75,11 +76,13 @@ echo -e "${Cyan}AllowBackup?${ColorOff}\t $(grep -i -P "android:allowBackup=\"(t
 echo -e "${Cyan}usesCleartextTraffic?${ColorOff}\t $(grep -i -P "android:usesCleartextTraffic=\"(true|false)"  ${manifest} -o | awk '{print $2}' FS='=\"')"
 #Get install location
 echo -e "${Cyan}installLocation${ColorOff}\t $(grep -i -P "android:installLocation=\"[\S]+\"" ${manifest} -o | awk '{print $2}' FS='=\"' | sed 's/\"$//g')"
+#Show AndroidManifest.xml location
+echo -e "${Cyan}Manifest Path\t ${ColorOff}${manifest}"
 
 #Checksums
-echo -e "${Cyan}md5${ColorOff}\t$(md5sum $1 | awk '{print $1}')"
-echo -e "${Cyan}sha1${ColorOff}\t$(sha1sum $1 | awk '{print $1}')"
-echo -e "${Cyan}sha256${ColorOff}\t$(sha256sum $1 | awk '{print $1}')"
+echo -e "${Cyan}md5${ColorOff}\t$(md5sum ${path}/${1} | awk '{print $1}')"
+echo -e "${Cyan}sha1${ColorOff}\t$(sha1sum ${path}/${1}| awk '{print $1}')"
+echo -e "${Cyan}sha256${ColorOff}\t$(sha256sum ${path}/${1} | awk '{print $1}')"
 
 #Get Permissions
 echo -e "\n${Cyan}Permissions${ColorOff}"
