@@ -59,9 +59,11 @@ fi
 #Find manifest location
 manifest=$(find ${path}/Decompiled -type f -name AndroidManifest.xml)
 #Get application name
-echo -e "${Cyan}Aplication name${ColorOff}\t $(grep	-i -P "<string name=\"appName\">[\S ]+</string>" ${path}/Decompiled/resources/res/values/strings.xml | cut -d ">" -f 2 | cut -d "<" -f 1)"
+echo -e "${Cyan}Application name${ColorOff}\t $(grep	-i -P "<string name=\"appName\">[\S ]+</string>" ${path}/Decompiled/resources/res/values/strings.xml | cut -d ">" -f 2 | cut -d "<" -f 1)"
 #Get Package name of the application
 echo -e "${Cyan}Package name${ColorOff}\t $(grep -i -P "package=\"[\S]+\""  ${manifest} -o | awk '{print $2}' FS='=\"' |tr -d '"')"
+#Get Android version
+echo -e "${Cyan}Application Version${ColorOff}\t $(grep -i -P "android:VersionName=\"[\S]\"" ${manifest} -o | awk '{print $2}' FS='=\"' | tr -d '"')"
 #Get minimum SDK version allowed
 echo -e "${Cyan}Min SDK${ColorOff}\t\t $(grep -i -P "minSdkVersion\=\"[\d]{1,2}" -o  ${manifest} | awk '{print $2}' FS='=\"')"
 #Get targeted SDK version
