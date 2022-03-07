@@ -63,7 +63,7 @@ echo -e "${Cyan}Application name${ColorOff}\t $(grep	-i -P "<string name=\"appNa
 #Get Package name of the application
 echo -e "${Cyan}Package name${ColorOff}\t $(grep -i -P "package=\"[\S]+\""  ${manifest} -o | awk '{print $2}' FS='=\"' |tr -d '"')"
 #Get Android version
-echo -e "${Cyan}Application Version${ColorOff}\t $(grep -i -P "android:VersionName=\"[\S]\"" ${manifest} -o | awk '{print $2}' FS='=\"' | tr -d '"')"
+echo -e "${Cyan}Application Version${ColorOff}\t $(grep -i -P "android:VersionName=\"[\S]+\"" ${manifest} -o | awk '{print $2}' FS='=\"' | tr -d '"')"
 #Get minimum SDK version allowed
 echo -e "${Cyan}Min SDK${ColorOff}\t\t $(grep -i -P "minSdkVersion\=\"[\d]{1,2}" -o  ${manifest} | awk '{print $2}' FS='=\"')"
 #Get targeted SDK version
@@ -94,7 +94,7 @@ echo -e "${Cyan}IP Addresses${ColorOff}"
 echo "$(grep -r -i -P '(25[0-5]|2[0-4][1-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)' -o -H -n ${path}/Decompiled/ --color='always' 2>/dev/null | grep -v -e '0.0.0.0')" #-H -n
 #Get web connections in the code
 echo -e "${Cyan}HTTP, HTTPS and file connections${ColorOff}"
-echo -e "$(grep -r -i -P '(http[s]?|file):\/\/[^\"]+' -h -o ${path}/Decompiled/ 2>/dev/null | grep -v -e 'w3.org' -e 'adobe' -e 'apache.org' -e 'xml.org' -e 'googleapis.com' | grep -v -P 'schemas.(microsoft|openxmlformats|android|xmlsoap)' | sort| uniq)"
+echo -e "$(grep -r -i -P '(http[s]?|file):\/\/[^\",; \n]+' -h -o ${path}/Decompiled/ 2>/dev/null | grep -v -e 'w3.org' -e 'adobe' -e 'apache.org' -e 'xml.org' -e 'googleapis.com' | grep -v -P 'schemas.(microsoft|openxmlformats|android|xmlsoap)' | sed 's/<\/string>$//g' |sort| uniq)"
 #Get port numbers in the code
 echo -e "${Cyan}Port conections${ColorOff}"
 echo -e "$(grep -r -i -P '[\ \-\_]?port[_\ \-]{1}[\S\.]*\ ?= ?[\d]{1,5}[ ;]' 2>/dev/null -h ${path}/Decompiled/ --color='always' | grep -i -v -e 'support' -e 'report' )" #Remove --color
